@@ -16,16 +16,18 @@ function S3Router(options, middleware) {
     middleware = [];
   }
 
-  var S3_BUCKET = options.bucket,
-    getFileKeyDir =
-      options.getFileKeyDir ||
-      function() {
-        return "";
-      };
+  var getFileKeyDir =
+    options.getFileKeyDir ||
+    function() {
+      return "";
+    };
 
+  /*
+  var S3_BUCKET = options.bucket,;
   if (!S3_BUCKET) {
     throw new Error("S3_BUCKET is required.");
   }
+  */
 
   var getS3 = options.getS3;
   if (!getS3) {
@@ -53,8 +55,18 @@ function S3Router(options, middleware) {
    * to GET an upload.
    */
   function tempRedirect(req, res) {
+    const { purpose } = req.query;
+    console.log("purpose in s3router is", purpose);
+
+    let bucket = null;
+    if (purpose !== "jobEngagementUpload") {
+      return;
+    } else {
+      bucket = "storylo-jobengagement-uploads";
+    }
+
     var params = {
-      Bucket: S3_BUCKET,
+      Bucket: bucket,
       Key: checkTrailingSlash(getFileKeyDir(req)) + req.params[0]
     };
     var s3 = getS3();
@@ -86,6 +98,37 @@ function S3Router(options, middleware) {
     if (counter === undefined || counter === null) {
       counter = 0;
     }
+    console.log("req.query is", req.query);
+
+    const { purpose } = req.query;
+    console.log("purpose in s3router is", purpose);
+
+    let bucket = null;
+    if (
+      purpose !== "jobEngagementUpload" &&
+      purpose !== "portfolioImages" &&
+      purpose !== "clientLogos" &&
+      purpose !== "modelImages" &&
+      purpose !== "jobSamplePhotography" &&
+      purpose !== "modelReleaseFormsUpload"
+    ) {
+      return;
+    } else if (purpose === "jobEngagementUpload") {
+      bucket = "storylo-jobengagement-uploads";
+    } else if (purpose === "portfolioImages") {
+      bucket = "storylo-portfolio-images";
+    } else if (purpose === "clientLogos") {
+      bucket = "storylo-client-logos";
+    } else if (purpose === "modelImages") {
+      bucket = "storylo-model-images";
+    } else if (purpose === "jobSamplePhotography") {
+      bucket = "storylo-job-posting-photos";
+    } else if (purpose === "modelReleaseFormsUpload") {
+      bucket = "storylo-model-release-forms";
+    }
+
+    if (!bucket) return;
+
     let lastIndex = 0;
     if (req.query.lastIndex) {
       lastIndex = parseInt(req.query.lastIndex, 10);
@@ -103,12 +146,13 @@ function S3Router(options, middleware) {
     }
     var s3 = getS3();
     var params = {
-      Bucket: S3_BUCKET,
+      Bucket: bucket,
       Key: fileKey,
       Expires: options.signatureExpires || 60,
       ContentType: mimeType,
       ACL: options.ACL || "private"
     };
+    console.log("call getSignedUrl with params", params);
     s3.getSignedUrl("putObject", params, function(err, data) {
       if (err) {
         console.log(err);
