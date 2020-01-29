@@ -91,7 +91,7 @@ function S3Router(options, middleware) {
 
   /**
    * Returns an object with `signedUrl` and `publicUrl` properties that
-   * give temporary access to PUT an object in an S3 bucket.
+   * * give temporary access to PUT an object in an S3 bucket.
    */
   router.get("/sign", middleware, function(req, res) {
     let counter = counters[req.query.path];
