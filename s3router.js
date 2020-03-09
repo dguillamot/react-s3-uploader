@@ -138,6 +138,9 @@ function S3Router(options, middleware) {
     counters[req.query.path] = counter;
     var filename = (req.query.path || "") + (counter + lastIndex) + ".jpg";
 
+    if (purpose === "jobEngagementUpload") {
+      filename = (req.query.path || "") + req.query.fileKey + ".jpg";
+    }
     var mimeType = req.query.contentType;
     var fileKey = checkTrailingSlash(getFileKeyDir(req)) + filename;
     // Set any custom headers
