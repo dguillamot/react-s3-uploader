@@ -59,10 +59,13 @@ function S3Router(options, middleware) {
     console.log("purpose in s3router is", purpose);
 
     let bucket = null;
-    if (purpose !== "jobEngagementUpload") {
-      return;
-    } else {
+
+    if (purpose === "jobEngagementUpload") {
       bucket = "storylo-jobengagement-uploads";
+    } else if (purpose === "sneakPreviewUpload") {
+      bucket = "storylo-sneakpreview-uploads";
+    } else {
+      return;
     }
 
     var params = {
@@ -110,7 +113,8 @@ function S3Router(options, middleware) {
       purpose !== "clientLogos" &&
       purpose !== "modelImages" &&
       purpose !== "jobSamplePhotography" &&
-      purpose !== "modelReleaseFormsUpload"
+      purpose !== "modelReleaseFormsUpload" &&
+      purpose !== "sneakPreviewUpload"
     ) {
       return;
     } else if (purpose === "jobEngagementUpload") {
@@ -125,6 +129,8 @@ function S3Router(options, middleware) {
       bucket = "storylo-job-posting-photos";
     } else if (purpose === "modelReleaseFormsUpload") {
       bucket = "storylo-model-release-forms";
+    } else if (purpose === "sneakPreviewUpload") {
+      bucket = "storylo-sneakpreview-uploads";
     }
 
     if (!bucket) return;
@@ -138,7 +144,7 @@ function S3Router(options, middleware) {
     counters[req.query.path] = counter;
     var filename = (req.query.path || "") + (counter + lastIndex) + ".jpg";
 
-    if (purpose === "jobEngagementUpload") {
+    if (purpose === "jobEngagementUpload" || purpose === "sneakPreviewUpload") {
       filename = (req.query.path || "") + req.query.fileKey + ".jpg";
     }
     var mimeType = req.query.contentType;
